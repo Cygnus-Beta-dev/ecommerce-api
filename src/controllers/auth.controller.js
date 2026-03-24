@@ -69,13 +69,11 @@ export const login = asyncHandler(async (req, res) => {
     password: _,
     __v,
     refreshToken: __,
-    ...userWithoutSensitiveData
   } = user.toObject();
 
   res.status(200).json({
     status: true,
     message: "Login successful",
-    user: userWithoutSensitiveData,
     accessToken,
     refreshToken,
   });
