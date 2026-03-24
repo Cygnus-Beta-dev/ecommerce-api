@@ -4,6 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import routes from './routes/index.js';
+
 
 const app = express();
 
@@ -21,6 +23,6 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-//app.use("/v1/api/", routes);
+app.use("/v1/api/", routes);
 
 export default app;

@@ -13,7 +13,7 @@ const envFile =
     : ".env.development";
 
 dotenv.config({ path: join(projectRoot, envFile) });
-dotenv.config({ path: join(projectRoot, ".env"), override: true });
+//dotenv.config({ path: join(projectRoot, ".env"), override: true });
 
 const config = {
   env: process.env.NODE_ENV || "development",
