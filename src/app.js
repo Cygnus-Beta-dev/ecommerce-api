@@ -4,8 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import routes from './routes/index.js';
-
+import routes from "./routes/index.js";
 
 const app = express();
 
@@ -24,5 +23,13 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/v1/api/", routes);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: false,
+    message: "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { error: err.message }),
+  });
+});
 
 export default app;
