@@ -6,6 +6,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  addProductRating,
+  getProductsByCategory,
 } from "../controllers/product.controller.js";
 import {
   authenticate,
@@ -14,16 +16,23 @@ import {
 
 const router = express.Router();
 
-router.use(authenticate);
-router.post("/", upload.array("images", 4), createProduct);
 router.get("/", getAllProducts);
+router.get("/category/:categoryId", getProductsByCategory);
 router.get("/:id", getProductById);
+router.use(authenticate);
+router.post(
+  "/",
+  authorizeRoles("admin"),
+  upload.array("images", 4),
+  createProduct
+);
 router.put(
   "/:id",
   authorizeRoles("admin"),
   upload.array("images", 4),
-  updateProduct,
+  updateProduct
 );
 router.delete("/:id", authorizeRoles("admin"), deleteProduct);
+router.post("/:id/rating", addProductRating);
 
 export default router;
