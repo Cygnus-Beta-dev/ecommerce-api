@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { verifyAccessToken } from "../utils/tokenUtils.js";
 
-export const protect = asyncHandler(async (req, res, next) => {
+export const authenticate = asyncHandler(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
@@ -25,3 +25,14 @@ export const protect = asyncHandler(async (req, res, next) => {
   req.user = decoded;
   next();
 });
+
+export const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ error: "Access denied: insufficient role" });
+    }
+    next();
+  };
+};

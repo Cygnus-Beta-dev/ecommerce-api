@@ -1,56 +1,60 @@
 import multer from "multer";
-import fs from "fs";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import { __dirname } from "../utils/path.js";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
-// Only allow specific image mimetypes
-function fileFilter(req, file, cb) {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.mimetype)) {
-    return cb(new Error("Only JPEG, PNG, and WEBP images are allowed"), false);
-  }
-  cb(null, true);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const uploadDir = join(__dirname, "..", "..", "uploads", "products");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Use memory storage
 const storage = multer.memoryStorage();
 
-export const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB
-  fileFilter,
-});
-
-// Save image to disk after validation passes
-export const saveImageToDisk = (fileBuffer, originalName) => {
-  const uploadPath = path.join(__dirname, "..", "uploads", "products");
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed."), false);
   }
-  const fileExt = path.extname(originalName);
-  const uniqueName = `${uuidv4()}${fileExt}`;
-  const fullPath = path.join(uploadPath, uniqueName);
-  fs.writeFileSync(fullPath, fileBuffer);
-  return uniqueName;
 };
 
-// Delete image file from disk
-export const deleteImageFromDisk = (imageUrl) => {
-  if (!imageUrl) return;
-  try {
-    const fileName = imageUrl.split("/").pop();
-    const filePath = path.join(
-      __dirname,
-      "..",
-      "uploads",
-      "products",
-      fileName,
-    );
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch (err) {
-    console.error("Image delete error:", err.message);
+export const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: fileFilter,
+});
+
+export const saveImageToDisk = (buffer, originalname, customName = null) => {
+  const timestamp = Date.now();
+  const ext = path.extname(originalname);
+  const fileName = customName 
+    ? `${customName}_${timestamp}${ext}`
+    : `${timestamp}_${originalname}`;
+  const filePath = path.join(uploadDir, fileName);
+  
+  fs.writeFileSync(filePath, buffer);
+  return fileName;
+};
+
+export const deleteImageFromDisk = (fileName) => {
+  if (!fileName) return;
+  const filePath = path.join(uploadDir, fileName);
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
   }
+};
+
+export const deleteMultipleImages = (imageUrls) => {
+  imageUrls.forEach(image => {
+    if (image.fileName) {
+      deleteImageFromDisk(image.fileName);
+    }
+  });
 };
