@@ -26,7 +26,7 @@ const router = express.Router();
 
 router.get("/", getProductsValidation, validate, getAllProducts);
 router.get("/category/:categoryId", getProductsByCategory);
-router.get("/:id", validate, getProductById);
+router.get("/:id", getProductById);
 
 router.use(authenticate);
 router.post(

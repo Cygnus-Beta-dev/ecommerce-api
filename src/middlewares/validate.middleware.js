@@ -78,30 +78,10 @@ export const getProductsValidation = [
 
 export const validateFileUpload = (req, res, next) => {
   const files = req.files || [];
-  const maxFiles = 4;
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const errors = {};
-  if (files.length > maxFiles) {
-    errors.images = `Maximum ${maxFiles} files allowed`;
-  }
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    file.originalname = file.originalname
-      .replace(/[^a-zA-Z0-9.-]/g, "_")
-      .trim();
-    if (!allowedTypes.includes(file.mimetype)) {
-      errors[`image_${i}`] = `Invalid file type. Allowed: JPEG, PNG, WEBP`;
-    }
-    if (file.size > maxSize) {
-      errors[`image_${i}`] = `File too large. Maximum size: 5MB`;
-    }
-  }
-  if (Object.keys(errors).length > 0) {
+  if (!files.length) {
     return res.status(400).json({
       status: false,
-      message: "File validation failed",
-      errors,
+      message: "At least one product image is required",
     });
   }
   next();

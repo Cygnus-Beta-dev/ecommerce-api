@@ -10,8 +10,8 @@ export const createProduct = asyncHandler(async (req, res) => {
   const { name, description, price, category, stock } = req.body;
   const files = req.files || [];
 
-  if (!files) {
-    throw new AppError("Product images are not found", 404);
+  if (!files || files.length === 0) {
+    throw new AppError("At least one product image is required", 400);
   }
   const existingProduct = await Product.findOne({
     name: { $regex: `^${name}$`, $options: "i" },

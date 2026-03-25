@@ -7,6 +7,8 @@ import {
   verifyRefreshToken,
 } from "../utils/tokenUtils.js";
 import { getCookieOptions } from "../utils/cookieOptions.js";
+import { sendEmail } from "../utils/email.js";
+import crypto from "crypto";
 
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -137,6 +139,58 @@ export const logout = asyncHandler(async (req, res) => {
   return res.status(200).json({
     status: true,
     message: "Logged out successfully",
+  });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) throw new AppError("Invalid or expired token", 400);
+
+  user.password = await bcrypt.hash(req.body.password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.json({
+    status: true,
+    message: "Password reset successful",
+  });
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) throw new AppError("User not found", 404);
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  await user.save();
+
+  const resetUrl = `${req.protocol}://${req.get(
+    "host",
+  )}/api/auth/reset-password/${resetToken}`;
+
+  await sendEmail({
+    email: user.email,
+    subject: "Password Reset",
+    message: `<p>Reset password: <a href="${resetUrl}">${resetUrl}</a></p>`,
+  });
+  res.json({
+    status: true,
+    message: "Reset link sent to email",
   });
 });
 

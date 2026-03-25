@@ -6,6 +6,8 @@ import {
   logout,
   getCurrentUser,
   refreshAccessToken,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/auth.controller.js";
 import {
   registerValidation,
@@ -18,7 +20,8 @@ router.post("/register", registerValidation, validate, register);
 router.post("/login", loginValidation, validate, login);
 router.post("/refresh-token", refreshAccessToken);
 router.post("/logout", logout);
-
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 router.get("/me", authenticate, getCurrentUser);
 
 export default router;
