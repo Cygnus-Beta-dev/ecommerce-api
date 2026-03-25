@@ -9,6 +9,17 @@ import { AppError } from "../middlewares/error.middleware.js";
 export const createProduct = asyncHandler(async (req, res) => {
   const { name, description, price, category, stock } = req.body;
   const files = req.files || [];
+
+  if (!files) {
+    throw new AppError("Product images are not found", 404);
+  }
+  const existingProduct = await Product.findOne({
+    name: { $regex: `^${name}$`, $options: "i" },
+    category,
+  });
+  if (existingProduct) {
+    throw new AppError("Product already exists in this category", 400);
+  }
   const categoryExists = await Category.findById(category);
   if (!categoryExists) {
     throw new AppError("Category not found", 404);
@@ -50,54 +61,56 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     maxPrice,
     minRating,
     inStock,
-    isActive = true,
+    isActive,
   } = req.query;
 
-  const filter = { isActive: isActive === "true" };
+  const filter = {};
+
+  if (isActive !== undefined) {
+    filter.isActive = isActive === true || isActive === "true";
+  }
+
   if (search) {
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
+      { name: { $regex: safeSearch, $options: "i" } },
+      { description: { $regex: safeSearch, $options: "i" } },
     ];
   }
-  if (category) {
-    filter.category = category;
-  }
+
+  if (category) filter.category = category;
+
   if (minPrice || maxPrice) {
     filter.price = {};
-    if (minPrice) filter.price.$gte = Number(minPrice);
-    if (maxPrice) filter.price.$lte = Number(maxPrice);
+    if (minPrice) filter.price.$gte = minPrice;
+    if (maxPrice) filter.price.$lte = maxPrice;
   }
-  if (minRating) {
-    filter.averageRating = { $gte: Number(minRating) };
-  }
-  if (inStock === "true") {
+
+  if (minRating) filter.averageRating = { $gte: minRating };
+
+  if (inStock === true || inStock === "true") {
     filter.stock = { $gt: 0 };
-  } else if (inStock === "false") {
-    filter.stock = 0;
   }
 
-  const pageNum = parseInt(page);
-  const limitNum = parseInt(limit);
-  const skip = (pageNum - 1) * limitNum;
+  const skip = (page - 1) * limit;
 
-  let sortBy = {};
-  if (sort) {
-    const sortFields = sort.split(",");
-    sortFields.forEach((field) => {
-      if (field.startsWith("-")) {
-        sortBy[field.substring(1)] = -1;
-      } else {
-        sortBy[field] = 1;
-      }
-    });
-  }
+  const sortBy = sort
+    ? Object.fromEntries(
+        sort
+          .split(",")
+          .map((field) =>
+            field.startsWith("-") ? [field.substring(1), -1] : [field, 1],
+          ),
+      )
+    : { createdAt: -1 };
+
   const products = await Product.find(filter)
     .populate("category", "name slug")
     .populate("createdBy", "name email")
     .sort(sortBy)
     .skip(skip)
-    .limit(limitNum);
+    .limit(limit);
 
   const total = await Product.countDocuments(filter);
   res.status(200).json({
@@ -105,12 +118,9 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     results: products.length,
     data: products,
     pagination: {
-      currentPage: pageNum,
-      totalPages: Math.ceil(total / limitNum),
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
       totalItems: total,
-      itemsPerPage: limitNum,
-      hasNextPage: pageNum * limitNum < total,
-      hasPrevPage: pageNum > 1,
     },
   });
 });

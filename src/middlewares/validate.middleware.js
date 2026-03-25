@@ -107,7 +107,6 @@ export const validateFileUpload = (req, res, next) => {
   next();
 };
 
-
 export const sanitizeQuery = (value) => {
   if (!value) return value;
   return value.replace(/[$]/g, "");
@@ -130,11 +129,10 @@ export const slugify = (value) => {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-") 
+    .replace(/\s+/g, "-")
     .replace(/[^\w\-]+/g, "")
     .replace(/\-\-+/g, "-");
 };
-
 
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
