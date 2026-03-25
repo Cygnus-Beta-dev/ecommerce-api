@@ -3,9 +3,9 @@ const router = express.Router();
 import {
   register,
   login,
-  refreshToken,
   logout,
   getCurrentUser,
+  refreshAccessToken,
 } from "../controllers/auth.controller.js";
 import {
   registerValidation,
@@ -16,7 +16,7 @@ import { authenticate } from "../middlewares/auth.middleware.js";
 
 router.post("/register", registerValidation, validate, register);
 router.post("/login", loginValidation, validate, login);
-router.post("/refresh-token", refreshToken);
+router.post("/refresh-token", refreshAccessToken);
 router.post("/logout", logout);
 
 router.get("/me", authenticate, getCurrentUser);

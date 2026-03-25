@@ -7,28 +7,28 @@ export const generateAccessToken = (user) => {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m" },
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m",
+    },
   );
 };
 
 export const generateRefreshToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
-  });
+  return jwt.sign(
+    {
+      id: user._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
+    },
+  );
 };
 
 export const verifyAccessToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-  } catch (error) {
-    return null;
-  }
+  return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 };
 
 export const verifyRefreshToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
-  } catch (error) {
-    return null;
-  }
+  return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 };
