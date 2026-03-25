@@ -13,26 +13,56 @@ import {
   authenticate,
   authorizeRoles,
 } from "../middlewares/auth.middleware.js";
+import {
+  createProductValidation,
+  updateProductValidation,
+  getProductByIdValidation,
+  deleteProductValidation,
+  addProductRatingValidation,
+  getProductsValidation,
+  validate,
+  validateFileUpload,
+} from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
-router.get("/", getAllProducts);
+router.get("/", getProductsValidation, validate, getAllProducts);
 router.get("/category/:categoryId", getProductsByCategory);
-router.get("/:id", getProductById);
+router.get("/:id", getProductByIdValidation, validate, getProductById);
+
 router.use(authenticate);
 router.post(
   "/",
   authorizeRoles("admin"),
   upload.array("images", 4),
+  validateFileUpload,
+  createProductValidation,
+  validate,
   createProduct
 );
+
 router.put(
   "/:id",
   authorizeRoles("admin"),
   upload.array("images", 4),
+  validateFileUpload,
+  updateProductValidation,
+  validate,
   updateProduct
 );
-router.delete("/:id", authorizeRoles("admin"), deleteProduct);
-router.post("/:id/rating", addProductRating);
+
+router.delete(
+  "/:id",
+  authorizeRoles("admin"),
+  deleteProductValidation,
+  validate,
+  deleteProduct
+);
+router.post(
+  "/:id/rating",
+  addProductRatingValidation,
+  validate,
+  addProductRating
+);
 
 export default router;

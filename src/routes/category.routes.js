@@ -9,13 +9,20 @@ import {
   authenticate,
   authorizeRoles,
 } from "../middlewares/auth.middleware.js";
+import {
+  createCategoryValidation,
+  updateCategoryValidation,
+  deleteCategoryValidation,
+  validate,
+} from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
+router.get("/", getAllCategories);
 router.use(authenticate);
-router.post("/", authorizeRoles("admin"), createCategory);
-router.get("/", authorizeRoles("admin"), getAllCategories);
-router.put("/:id", authorizeRoles("admin"), updateCategory);
-router.delete("/:id", authorizeRoles("admin"), deleteCategory);
+router.use(authorizeRoles("admin"));
+router.post("/", createCategoryValidation, validate, createCategory);
+router.put("/:id", updateCategoryValidation, validate, updateCategory);
+router.delete("/:id", deleteCategoryValidation, validate, deleteCategory);
 
 export default router;
