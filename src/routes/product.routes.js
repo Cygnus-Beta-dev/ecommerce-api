@@ -16,8 +16,6 @@ import {
 import {
   createProductValidation,
   updateProductValidation,
-  getProductByIdValidation,
-  deleteProductValidation,
   addProductRatingValidation,
   getProductsValidation,
   validate,
@@ -28,7 +26,7 @@ const router = express.Router();
 
 router.get("/", getProductsValidation, validate, getAllProducts);
 router.get("/category/:categoryId", getProductsByCategory);
-router.get("/:id", getProductByIdValidation, validate, getProductById);
+router.get("/:id", validate, getProductById);
 
 router.use(authenticate);
 router.post(
@@ -54,7 +52,6 @@ router.put(
 router.delete(
   "/:id",
   authorizeRoles("admin"),
-  deleteProductValidation,
   validate,
   deleteProduct
 );

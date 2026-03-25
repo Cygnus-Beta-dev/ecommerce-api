@@ -11,8 +11,6 @@ import {
 } from "../middlewares/auth.middleware.js";
 import {
   createCategoryValidation,
-  updateCategoryValidation,
-  deleteCategoryValidation,
   validate,
 } from "../middlewares/validate.middleware.js";
 
@@ -22,7 +20,7 @@ router.get("/", getAllCategories);
 router.use(authenticate);
 router.use(authorizeRoles("admin"));
 router.post("/", createCategoryValidation, validate, createCategory);
-router.put("/:id", updateCategoryValidation, validate, updateCategory);
-router.delete("/:id", deleteCategoryValidation, validate, deleteCategory);
+router.put("/:id", validate, updateCategory);
+router.delete("/:id", validate, deleteCategory);
 
 export default router;
