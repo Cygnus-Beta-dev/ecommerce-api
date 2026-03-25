@@ -210,9 +210,17 @@ export const addProductRating = asyncHandler(async (req, res) => {
       user: userId,
       rating,
       comment,
+      createdAt: new Date(),
     });
   }
-  await product.updateAverageRating();
+
+  // Calculate average rating
+  const totalRating = product.ratings.reduce((sum, r) => sum + r.rating, 0);
+  product.averageRating = totalRating / product.ratings.length;
+  product.numOfReviews = product.ratings.length;
+
+  await product.save();
+
   res.status(200).json({
     status: true,
     message: "Rating added successfully",
