@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.use("/auth", authRoutes);
 router.use("/products", productRoutes);
-router.use("/category", categoriesRoutes);
+router.use("/categories", categoriesRoutes);
 router.use("/order", orderRoutes);
 
 export default router;
