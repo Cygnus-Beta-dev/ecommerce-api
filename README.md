@@ -51,19 +51,22 @@ npm install
 ---
 
 ## Environment Variables
+NODE_ENV=development
+
 PORT=8080
 MONGODB_URI=your_mongodb_url
+PRODUCT_IMAGE_BASE_URL=http://localhost:8080/uploads/products
 
 ACCESS_TOKEN_SECRET=your_access_secret
 REFRESH_TOKEN_SECRET=your_refresh_secret
-
 ACCESS_TOKEN_EXPIRY=15m
 REFRESH_TOKEN_EXPIRY=7d
 
+COOKIE_SECURE=false
+COOKIE_SAME_SITE=lax
+
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
-
-NODE_ENV=development
 
 ## Dev Mode
 ```bash
